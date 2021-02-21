@@ -15,8 +15,8 @@ class Product with ChangeNotifier {
     @required this.id,
     @required this.title,
     @required this.description,
-    @required this.imageUrl,
     @required this.price,
+    @required this.imageUrl,
     this.isFavorite = false,
   });
 
@@ -32,10 +32,12 @@ class Product with ChangeNotifier {
     final url =
         'https://shopapp-4833a-default-rtdb.firebaseio.com/userFavorites/$userId/$id.json?auth=$token';
     try {
-      final response = await http.put(url,
-          body: json.encode({
-            isFavorite,
-          }));
+      final response = await http.put(
+        url,
+        body: json.encode(
+          isFavorite,
+        ),
+      );
       if (response.statusCode >= 400) {
         _setFavValue(oldStatus);
       }

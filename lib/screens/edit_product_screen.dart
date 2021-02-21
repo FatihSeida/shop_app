@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:shop_app/providers/product.dart';
-import 'package:shop_app/providers/products_provider.dart';
+
+import '../providers/product.dart';
+import '../providers/products.dart';
 
 class EditProductScreen extends StatefulWidget {
   static const routeName = '/edit-product';
+
   @override
   _EditProductScreenState createState() => _EditProductScreenState();
 }
@@ -12,25 +14,22 @@ class EditProductScreen extends StatefulWidget {
 class _EditProductScreenState extends State<EditProductScreen> {
   final _priceFocusNode = FocusNode();
   final _descriptionFocusNode = FocusNode();
-  final _imageUrlFocusNode = FocusNode();
   final _imageUrlController = TextEditingController();
+  final _imageUrlFocusNode = FocusNode();
   final _form = GlobalKey<FormState>();
-
   var _editedProduct = Product(
     id: null,
     title: '',
+    price: 0,
     description: '',
     imageUrl: '',
-    price: 0,
   );
-
   var _initValues = {
     'title': '',
     'description': '',
     'price': '',
     'imageUrl': '',
   };
-
   var _isInit = true;
   var _isLoading = false;
 
@@ -45,13 +44,13 @@ class _EditProductScreenState extends State<EditProductScreen> {
     if (_isInit) {
       final productId = ModalRoute.of(context).settings.arguments as String;
       if (productId != null) {
-        _editedProduct = Provider.of<ProductsProvider>(context, listen: false)
-            .findById(productId);
+        _editedProduct =
+            Provider.of<Products>(context, listen: false).findById(productId);
         _initValues = {
           'title': _editedProduct.title,
           'description': _editedProduct.description,
           'price': _editedProduct.price.toString(),
-          //'imageUrl': _editedProduct.imageUrl,
+          // 'imageUrl': _editedProduct.imageUrl,
           'imageUrl': '',
         };
         _imageUrlController.text = _editedProduct.imageUrl;
@@ -94,31 +93,32 @@ class _EditProductScreenState extends State<EditProductScreen> {
       _isLoading = true;
     });
     if (_editedProduct.id != null) {
-      await Provider.of<ProductsProvider>(context, listen: false)
+      await Provider.of<Products>(context, listen: false)
           .updateProduct(_editedProduct.id, _editedProduct);
     } else {
       try {
-        Provider.of<ProductsProvider>(context, listen: false)
+        await Provider.of<Products>(context, listen: false)
             .addProduct(_editedProduct);
       } catch (error) {
         await showDialog(
           context: context,
           builder: (ctx) => AlertDialog(
-            title: Text('An error occurred'),
-            content: Text(error.toString()),
+            title: Text('An error occurred!'),
+            content: Text('Something went wrong.'),
             actions: <Widget>[
               TextButton(
-                  onPressed: () {
-                    Navigator.of(context).pop();
-                  },
-                  child: Text('Okay'))
+                child: Text('Okay'),
+                onPressed: () {
+                  Navigator.of(ctx).pop();
+                },
+              )
             ],
           ),
         );
       }
       // finally {
       //   setState(() {
-      //     _isLoading = true;
+      //     _isLoading = false;
       //   });
       //   Navigator.of(context).pop();
       // }
@@ -127,6 +127,7 @@ class _EditProductScreenState extends State<EditProductScreen> {
       _isLoading = false;
     });
     Navigator.of(context).pop();
+    // Navigator.of(context).pop();
   }
 
   @override
@@ -138,7 +139,7 @@ class _EditProductScreenState extends State<EditProductScreen> {
           IconButton(
             icon: Icon(Icons.save),
             onPressed: _saveForm,
-          )
+          ),
         ],
       ),
       body: _isLoading
@@ -146,7 +147,7 @@ class _EditProductScreenState extends State<EditProductScreen> {
               child: CircularProgressIndicator(),
             )
           : Padding(
-              padding: const EdgeInsets.all(16),
+              padding: const EdgeInsets.all(16.0),
               child: Form(
                 key: _form,
                 child: ListView(

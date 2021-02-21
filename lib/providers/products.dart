@@ -1,11 +1,12 @@
-import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
-import 'package:shop_app/models/http_exception.dart';
 import 'dart:convert';
 
-import '../providers/product.dart';
+import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
 
-class ProductsProvider with ChangeNotifier {
+import '../models/http_exception.dart';
+import './product.dart';
+
+class Products with ChangeNotifier {
   List<Product> _items = [
     // Product(
     //   id: 'p1',
@@ -40,21 +41,16 @@ class ProductsProvider with ChangeNotifier {
     //       'https://upload.wikimedia.org/wikipedia/commons/thumb/1/14/Cast-Iron-Pan.jpg/1024px-Cast-Iron-Pan.jpg',
     // ),
   ];
-
   // var _showFavoritesOnly = false;
   final String authToken;
   final String userId;
 
-  ProductsProvider(
-    this.authToken,
-    this.userId,
-    this._items,
-  );
+  Products(this.authToken, this.userId, this._items);
 
   List<Product> get items {
-    //if (_showFavoritesOnly) {
-    //return _items.where((prodItem) => prodItem.isFavorite).toList();
-    //}
+    // if (_showFavoritesOnly) {
+    //   return _items.where((prodItem) => prodItem.isFavorite).toList();
+    // }
     return [..._items];
   }
 
@@ -88,7 +84,7 @@ class ProductsProvider with ChangeNotifier {
         return;
       }
       url =
-          'https://shopapp-4833a-default-rtdb.firebaseio.com/userFavorites/$userId?auth=$authToken';
+          'https://shopapp-4833a-default-rtdb.firebaseio.com/userFavorites/$userId.json?auth=$authToken';
       final favoriteResponse = await http.get(url);
       final favoriteData = json.decode(favoriteResponse.body);
       final List<Product> loadedProducts = [];
@@ -132,13 +128,12 @@ class ProductsProvider with ChangeNotifier {
         id: json.decode(response.body)['name'],
       );
       _items.add(newProduct);
+      // _items.insert(0, newProduct); // at the start of the list
       notifyListeners();
     } catch (error) {
       print(error);
       throw error;
     }
-
-    // _items.insert(0, newProduct); // at the start of the list
   }
 
   Future<void> updateProduct(String id, Product newProduct) async {
@@ -151,7 +146,7 @@ class ProductsProvider with ChangeNotifier {
             'title': newProduct.title,
             'description': newProduct.description,
             'imageUrl': newProduct.imageUrl,
-            'price': newProduct.price,
+            'price': newProduct.price
           }));
       _items[prodIndex] = newProduct;
       notifyListeners();
@@ -171,7 +166,7 @@ class ProductsProvider with ChangeNotifier {
     if (response.statusCode >= 400) {
       _items.insert(existingProductIndex, existingProduct);
       notifyListeners();
-      throw HttpException('Could not delet product');
+      throw HttpException('Could not delete product.');
     }
     existingProduct = null;
   }
